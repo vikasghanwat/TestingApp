@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EmployeeServiceImplTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.TestingApp.service.impl</a> &gt; <span class="el_source">EmployeeServiceImplTest.java</span></div><h1>EmployeeServiceImplTest.java</h1><pre class="source lang-java linenums">package com.TestingApp.service.impl;
+
+import com.TestingApp.dto.EmployeeDto;
+import com.TestingApp.entities.Employee;
+import com.TestingApp.exceptions.ResourceNotFoundException;
+import com.TestingApp.repository.EmployeeRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+<span class="fc" id="L24">class EmployeeServiceImplTest {</span>
+
+    @Mock
+    private EmployeeRepository employeeRepository;
+
+    @Spy
+    private ModelMapper modelMapper;
+
+    @InjectMocks
+    private EmployeeServiceImpl employeeService;
+
+    private Employee mockEmployee;
+    private EmployeeDto mockEmployeeDto;
+
+    @BeforeEach
+    void setUp() {
+<span class="fc" id="L40">        mockEmployee = Employee.builder()</span>
+<span class="fc" id="L41">                .id(1L)</span>
+<span class="fc" id="L42">                .email(&quot;anuj@gmail.com&quot;)</span>
+<span class="fc" id="L43">                .name(&quot;Anuj&quot;)</span>
+<span class="fc" id="L44">                .salary(200L)</span>
+<span class="fc" id="L45">                .build();</span>
+
+<span class="fc" id="L47">        mockEmployeeDto = modelMapper.map(mockEmployee, EmployeeDto.class);</span>
+<span class="fc" id="L48">    }</span>
+
+    @Test
+    void testGetEmployeeById_WhenEmployeeIdIsPresent_ThenReturnEmployeeDto() {
+//        assign
+<span class="fc" id="L53">        Long id = mockEmployee.getId();</span>
+<span class="fc" id="L54">        when(employeeRepository.findById(id)).thenReturn(Optional.of(mockEmployee)); //stubbing</span>
+
+//        act
+<span class="fc" id="L57">        EmployeeDto employeeDto = employeeService.getEmployeeById(id);</span>
+
+//        assert
+<span class="fc" id="L60">        assertThat(employeeDto).isNotNull();</span>
+<span class="fc" id="L61">        assertThat(employeeDto.getId()).isEqualTo(id);</span>
+<span class="fc" id="L62">        assertThat(employeeDto.getEmail()).isEqualTo(mockEmployee.getEmail());</span>
+<span class="fc" id="L63">        verify(employeeRepository, only()).findById(id);</span>
+<span class="fc" id="L64">    }</span>
+
+    @Test
+    void testGetEmployeeById_whenEmployeeIsNotPresent_thenThrowException() {
+//        arrange
+<span class="fc" id="L69">        when(employeeRepository.findById(anyLong())).thenReturn(Optional.empty());</span>
+//        act and assert
+
+<span class="pc" id="L72">        assertThatThrownBy(() -&gt; employeeService.getEmployeeById(1L))</span>
+<span class="fc" id="L73">                .isInstanceOf(ResourceNotFoundException.class)</span>
+<span class="fc" id="L74">                .hasMessage(&quot;Employee not found with id: 1&quot;);</span>
+
+<span class="fc" id="L76">        verify(employeeRepository).findById(1L);</span>
+<span class="fc" id="L77">    }</span>
+
+    @Test
+    void testCreateNewEmployee_WhenValidEmployee_ThenCreateNewEmployee() {
+//        assign
+<span class="fc" id="L82">        when(employeeRepository.findByEmail(anyString())).thenReturn(List.of());</span>
+<span class="fc" id="L83">        when(employeeRepository.save(any(Employee.class))).thenReturn(mockEmployee);</span>
+//        act
+
+<span class="fc" id="L86">        EmployeeDto employeeDto = employeeService.createNewEmployee(mockEmployeeDto);</span>
+//        assert
+<span class="fc" id="L88">        assertThat(employeeDto).isNotNull();</span>
+<span class="fc" id="L89">        assertThat(employeeDto.getEmail()).isEqualTo(mockEmployeeDto.getEmail());</span>
+
+<span class="fc" id="L91">        ArgumentCaptor&lt;Employee&gt; employeeArgumentCaptor = ArgumentCaptor.forClass(Employee.class);</span>
+<span class="fc" id="L92">        verify(employeeRepository).save(employeeArgumentCaptor.capture());</span>
+
+<span class="fc" id="L94">        Employee capturedEmployee = employeeArgumentCaptor.getValue();</span>
+<span class="fc" id="L95">        assertThat(capturedEmployee.getEmail()).isEqualTo(mockEmployee.getEmail());</span>
+<span class="fc" id="L96">    }</span>
+
+    @Test
+    void testCreateNewEmployee_whenAttemptingToCreateEmployeeWithExistingEmail_thenThrowException() {
+//        arrange
+<span class="fc" id="L101">        when(employeeRepository.findByEmail(mockEmployeeDto.getEmail())).thenReturn(List.of(mockEmployee));</span>
+//        act and assert
+
+<span class="pc" id="L104">        assertThatThrownBy(() -&gt; employeeService.createNewEmployee(mockEmployeeDto))</span>
+<span class="fc" id="L105">                .isInstanceOf(RuntimeException.class)</span>
+<span class="fc" id="L106">                .hasMessage(&quot;Employee already exists with email: &quot; + mockEmployee.getEmail());</span>
+
+<span class="fc" id="L108">        verify(employeeRepository).findByEmail(mockEmployeeDto.getEmail());</span>
+<span class="fc" id="L109">        verify(employeeRepository, never()).save(any());</span>
+<span class="fc" id="L110">    }</span>
+
+
+    @Test
+    void testUpdateEmployee_whenEmployeeDoesNotExists_thenThrowException() {
+//        arrange
+<span class="fc" id="L116">        when(employeeRepository.findById(1L)).thenReturn(Optional.empty());</span>
+
+//        act and assert
+<span class="pc" id="L119">        assertThatThrownBy(() -&gt; employeeService.updateEmployee(1L, mockEmployeeDto))</span>
+<span class="fc" id="L120">                .isInstanceOf(ResourceNotFoundException.class)</span>
+<span class="fc" id="L121">                .hasMessage(&quot;Employee not found with id: 1&quot;);</span>
+
+<span class="fc" id="L123">        verify(employeeRepository).findById(1L);</span>
+<span class="fc" id="L124">        verify(employeeRepository, never()).save(any());</span>
+<span class="fc" id="L125">    }</span>
+
+    @Test
+    void testUpdateEmployee_whenAttemptingToUpdateEmail_thenThrowException() {
+<span class="fc" id="L129">        when(employeeRepository.findById(mockEmployeeDto.getId())).thenReturn(Optional.of(mockEmployee));</span>
+<span class="fc" id="L130">        mockEmployeeDto.setName(&quot;Random&quot;);</span>
+<span class="fc" id="L131">        mockEmployeeDto.setEmail(&quot;random@gmail.com&quot;);</span>
+
+//        act and assert
+
+<span class="pc" id="L135">        assertThatThrownBy(() -&gt; employeeService.updateEmployee(mockEmployeeDto.getId(), mockEmployeeDto))</span>
+<span class="fc" id="L136">                .isInstanceOf(RuntimeException.class)</span>
+<span class="fc" id="L137">                .hasMessage(&quot;The email of the employee cannot be updated&quot;);</span>
+
+<span class="fc" id="L139">        verify(employeeRepository).findById(mockEmployeeDto.getId());</span>
+<span class="fc" id="L140">        verify(employeeRepository, never()).save(any());</span>
+<span class="fc" id="L141">    }</span>
+
+    @Test
+    void testUpdateEmployee_whenValidEmployee_thenUpdateEmployee() {
+//        arrange
+<span class="fc" id="L146">        when(employeeRepository.findById(mockEmployeeDto.getId())).thenReturn(Optional.of(mockEmployee));</span>
+<span class="fc" id="L147">        mockEmployeeDto.setName(&quot;Random name&quot;);</span>
+<span class="fc" id="L148">        mockEmployeeDto.setSalary(199L);</span>
+
+
+<span class="fc" id="L151">        Employee newEmployee = modelMapper.map(mockEmployeeDto, Employee.class);</span>
+<span class="fc" id="L152">        when(employeeRepository.save(any(Employee.class))).thenReturn(newEmployee);</span>
+//        act
+<span class="fc" id="L154">        EmployeeDto updatedEmployeeDto = employeeService.updateEmployee(mockEmployeeDto.getId(), mockEmployeeDto);</span>
+
+<span class="fc" id="L156">        assertThat(updatedEmployeeDto).isEqualTo(mockEmployeeDto);</span>
+
+<span class="fc" id="L158">        verify(employeeRepository).findById(1L);</span>
+<span class="fc" id="L159">        verify(employeeRepository).save(any());</span>
+<span class="fc" id="L160">    }</span>
+
+    @Test
+    void testDeleteEmployee_whenEmployeeDoesNotExists_thenThrowException() {
+<span class="fc" id="L164">        when(employeeRepository.existsById(1L)).thenReturn(false);</span>
+
+//        act
+<span class="pc" id="L167">        assertThatThrownBy(() -&gt; employeeService.deleteEmployee(1L))</span>
+<span class="fc" id="L168">                .isInstanceOf(ResourceNotFoundException.class)</span>
+<span class="fc" id="L169">                .hasMessage(&quot;Employee not found with id: &quot; + 1L);</span>
+
+<span class="fc" id="L171">        verify(employeeRepository, never()).deleteById(anyLong());</span>
+<span class="fc" id="L172">    }</span>
+
+
+    @Test
+    void testDeleteEmployee_whenEmployeeIsValid_thenDeleteEmployee() {
+//        arrange
+<span class="fc" id="L178">        when(employeeRepository.existsById(1L)).thenReturn(true);</span>
+
+<span class="fc" id="L180">        assertThatCode(() -&gt; employeeService.deleteEmployee(1L))</span>
+<span class="fc" id="L181">                .doesNotThrowAnyException();</span>
+
+<span class="fc" id="L183">        verify(employeeRepository).deleteById(1L);</span>
+<span class="fc" id="L184">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

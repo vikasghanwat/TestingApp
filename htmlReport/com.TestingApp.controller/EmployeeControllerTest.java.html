@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EmployeeControllerTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.TestingApp.controller</a> &gt; <span class="el_source">EmployeeControllerTest.java</span></div><h1>EmployeeControllerTest.java</h1><pre class="source lang-java linenums">package com.TestingApp.controller;
+
+import com.TestingApp.dto.EmployeeDto;
+import com.TestingApp.entities.Employee;
+import com.TestingApp.repository.EmployeeRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
+import org.springframework.test.web.reactive.server.WebTestClient;
+
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureWebTestClient
+<span class="nc" id="L16">class EmployeeControllerTestIT {</span>
+
+    @Autowired
+    private WebTestClient webTestClient;
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    Employee testEmployee;
+    EmployeeDto testEmployeeDto;
+
+    @BeforeEach
+    void setUp() {
+
+<span class="nc" id="L30">     testEmployee = Employee.builder()</span>
+<span class="nc" id="L31">                .email(&quot;vikas@gmail.com&quot;)</span>
+<span class="nc" id="L32">                .name(&quot;Vikas&quot;)</span>
+<span class="nc" id="L33">                .salary(200L)</span>
+<span class="nc" id="L34">                .build();</span>
+<span class="nc" id="L35">     testEmployeeDto = EmployeeDto.builder()</span>
+<span class="nc" id="L36">                .email(&quot;vikas@gmail.com&quot;)</span>
+<span class="nc" id="L37">                .name(&quot;Vikas&quot;)</span>
+<span class="nc" id="L38">                .salary(200L)</span>
+<span class="nc" id="L39">                .build();</span>
+<span class="nc" id="L40">        employeeRepository.deleteAll();</span>
+<span class="nc" id="L41">    }</span>
+
+    @Test
+    void testGetEmployeeById_success() {
+<span class="nc" id="L45">        Employee savedEmployee = employeeRepository.save(testEmployee);</span>
+<span class="nc" id="L46">        webTestClient.get()</span>
+<span class="nc" id="L47">                .uri(&quot;/employees/{id}&quot;, savedEmployee.getId())</span>
+<span class="nc" id="L48">                .exchange()</span>
+<span class="nc" id="L49">                .expectStatus().isOk()</span>
+<span class="nc" id="L50">                .expectBody()</span>
+<span class="nc" id="L51">                .jsonPath(&quot;$.id&quot;).isEqualTo(savedEmployee.getId())</span>
+<span class="nc" id="L52">                .jsonPath(&quot;$.email&quot;).isEqualTo(savedEmployee.getEmail());</span>
+
+//                .value(employeeDto -&gt; {
+//                    assertThat(employeeDto.getEmail()).isEqualTo(savedEmployee.getEmail());
+//                    assertThat(employeeDto.getId()).isEqualTo(savedEmployee.getId());
+//                });
+<span class="nc" id="L58">    }</span>
+
+    @Test
+    void testGetEmployeeById_Failure() {
+<span class="nc" id="L62">        webTestClient.get()</span>
+<span class="nc" id="L63">                .uri(&quot;/employees/1&quot;)</span>
+<span class="nc" id="L64">                .exchange()</span>
+<span class="nc" id="L65">                .expectStatus().isNotFound();</span>
+<span class="nc" id="L66">    }</span>
+
+    @Test
+    void testCreateNewEmployee_whenEmployeeAlreadyExists_thenThrowException() {
+<span class="nc" id="L70">        Employee savedEmployee = employeeRepository.save(testEmployee);</span>
+
+<span class="nc" id="L72">        webTestClient.post()</span>
+<span class="nc" id="L73">                .uri(&quot;/employees&quot;)</span>
+<span class="nc" id="L74">                .bodyValue(testEmployeeDto)</span>
+<span class="nc" id="L75">                .exchange()</span>
+<span class="nc" id="L76">                .expectStatus().is5xxServerError();</span>
+<span class="nc" id="L77">    }</span>
+
+    @Test
+    void testCreateNewEmployee_whenEmployeeDoesNotExists_thenCreateEmployee() {
+<span class="nc" id="L81">        webTestClient.post()</span>
+<span class="nc" id="L82">                .uri(&quot;/employees&quot;)</span>
+<span class="nc" id="L83">                .bodyValue(testEmployeeDto)</span>
+<span class="nc" id="L84">                .exchange()</span>
+<span class="nc" id="L85">                .expectStatus().isCreated()</span>
+<span class="nc" id="L86">                .expectBody()</span>
+<span class="nc" id="L87">                .jsonPath(&quot;$.email&quot;).isEqualTo(testEmployeeDto.getEmail())</span>
+<span class="nc" id="L88">                .jsonPath(&quot;$.name&quot;).isEqualTo(testEmployeeDto.getName());</span>
+<span class="nc" id="L89">    }</span>
+
+    @Test
+    void testUpdateEmployee_whenEmployeeDoesNotExists_thenThrowException() {
+<span class="nc" id="L93">        webTestClient.put()</span>
+<span class="nc" id="L94">                .uri(&quot;/employees/999&quot;)</span>
+<span class="nc" id="L95">                .bodyValue(testEmployeeDto)</span>
+<span class="nc" id="L96">                .exchange()</span>
+<span class="nc" id="L97">                .expectStatus().isNotFound();</span>
+<span class="nc" id="L98">    }</span>
+
+    @Test
+    void testUpdateEmployee_whenAttemptingToUpdateTheEmail_thenThrowException() {
+<span class="nc" id="L102">        Employee savedEmployee = employeeRepository.save(testEmployee);</span>
+<span class="nc" id="L103">        testEmployeeDto.setName(&quot;Random Name&quot;);</span>
+<span class="nc" id="L104">        testEmployeeDto.setEmail(&quot;random@gmail.com&quot;);</span>
+
+<span class="nc" id="L106">        webTestClient.put()</span>
+<span class="nc" id="L107">                .uri(&quot;/employees/{id}&quot;, savedEmployee.getId())</span>
+<span class="nc" id="L108">                .bodyValue(testEmployeeDto)</span>
+<span class="nc" id="L109">                .exchange()</span>
+<span class="nc" id="L110">                .expectStatus().is5xxServerError();</span>
+<span class="nc" id="L111">    }</span>
+
+    @Test
+    void testUpdateEmployee_whenEmployeeIsValid_thenUpdateEmployee() {
+<span class="nc" id="L115">        Employee savedEmployee = employeeRepository.save(testEmployee);</span>
+<span class="nc" id="L116">        testEmployeeDto.setName(&quot;Random Name&quot;);</span>
+<span class="nc" id="L117">        testEmployeeDto.setSalary(250L);</span>
+
+<span class="nc" id="L119">        webTestClient.put()</span>
+<span class="nc" id="L120">                .uri(&quot;/employees/{id}&quot;, savedEmployee.getId())</span>
+<span class="nc" id="L121">                .bodyValue(testEmployeeDto)</span>
+<span class="nc" id="L122">                .exchange()</span>
+<span class="nc" id="L123">                .expectStatus().isOk()</span>
+<span class="nc" id="L124">                .expectBody(EmployeeDto.class)</span>
+<span class="nc" id="L125">                .isEqualTo(testEmployeeDto);</span>
+<span class="nc" id="L126">    }</span>
+
+    @Test
+    void testDeleteEmployee_whenEmployeeDoesNotExists_thenThrowException() {
+<span class="nc" id="L130">        webTestClient.delete()</span>
+<span class="nc" id="L131">                .uri(&quot;/employees/1&quot;)</span>
+<span class="nc" id="L132">                .exchange()</span>
+<span class="nc" id="L133">                .expectStatus().isNotFound();</span>
+<span class="nc" id="L134">    }</span>
+
+    @Test
+    void testDeleteEmployee_whenEmployeeExists_thenDeleteEmployee() {
+<span class="nc" id="L138">        Employee savedEmployee = employeeRepository.save(testEmployee);</span>
+
+<span class="nc" id="L140">        webTestClient.delete()</span>
+<span class="nc" id="L141">                .uri(&quot;/employees/{id}&quot;, savedEmployee.getId())</span>
+<span class="nc" id="L142">                .exchange()</span>
+<span class="nc" id="L143">                .expectStatus().isNoContent()</span>
+<span class="nc" id="L144">                .expectBody(Void.class);</span>
+
+<span class="nc" id="L146">        webTestClient.delete()</span>
+<span class="nc" id="L147">                .uri(&quot;/employees/{id}&quot;, savedEmployee.getId())</span>
+<span class="nc" id="L148">                .exchange()</span>
+<span class="nc" id="L149">                .expectStatus().isNotFound();</span>
+<span class="nc" id="L150">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>

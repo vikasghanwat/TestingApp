@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestingAppApplicationTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.TestingApp</a> &gt; <span class="el_source">TestingAppApplicationTests.java</span></div><h1>TestingAppApplicationTests.java</h1><pre class="source lang-java linenums">package com.TestingApp;
+
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.*;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+<span class="fc" id="L9">@Slf4j</span>
+<span class="fc" id="L10">class TestingAppApplicationTests {</span>
+
+    @BeforeAll
+    static void setUpOnce() {
+<span class="fc" id="L14">        log.info(&quot;Setup Once...&quot;);</span>
+<span class="fc" id="L15">    }</span>
+
+    @AfterAll
+    static void tearDownOnce() {
+<span class="fc" id="L19">        log.info(&quot;Tearing down all...&quot;);</span>
+<span class="fc" id="L20">    }</span>
+
+    @BeforeEach
+    void setUp() {
+<span class="fc" id="L24">        log.info(&quot;Starting the method, setting up config&quot;);</span>
+<span class="fc" id="L25">    }</span>
+
+    @AfterEach
+    void tearDown() {
+<span class="fc" id="L29">        log.info(&quot;Tearing down the method&quot;);</span>
+<span class="fc" id="L30">    }</span>
+
+    @Test
+//	@Disabled
+    void testNumberOne() {
+<span class="fc" id="L35">        int a = 5;</span>
+<span class="fc" id="L36">        int b = 3;</span>
+
+<span class="fc" id="L38">        int result = addTwoNumbers(a, b);</span>
+
+//		Assertions.assertEquals(8, result);
+//		Assertions.
+
+//		assertThat(result)
+//				.isEqualTo(7)
+//				.isCloseTo(9, Offset.offset(1));
+
+<span class="fc" id="L47">        assertThat(&quot;Apple&quot;)</span>
+<span class="fc" id="L48">                .isEqualTo(&quot;Apple&quot;)</span>
+<span class="fc" id="L49">                .startsWith(&quot;App&quot;)</span>
+<span class="fc" id="L50">                .endsWith(&quot;le&quot;)</span>
+<span class="fc" id="L51">                .hasSize(5);</span>
+
+<span class="fc" id="L53">    }</span>
+
+    @Test
+//	@DisplayName(&quot;displayTestNameTwo&quot;)
+    void testDivideTwoNumbers_whenDenominatorIsZero_ThenArithmeticException() {
+
+<span class="fc" id="L59">        int a = 5;</span>
+<span class="fc" id="L60">        int b = 0;</span>
+
+<span class="pc" id="L62">        assertThatThrownBy(() -&gt; divideTwoNumbers(a, b))</span>
+<span class="fc" id="L63">                .isInstanceOf(ArithmeticException.class)</span>
+<span class="fc" id="L64">                .hasMessage(&quot;Tried to divide by zero&quot;);</span>
+
+<span class="fc" id="L66">    }</span>
+
+    int addTwoNumbers(int a, int b) {
+<span class="fc" id="L69">        return a + b;</span>
+    }
+
+    double divideTwoNumbers(int a, int b) {
+        try {
+<span class="nc" id="L74">            return a / b;</span>
+<span class="fc" id="L75">        } catch (ArithmeticException e) {</span>
+<span class="fc" id="L76">            log.error(&quot;Arithmentic excepiton occured: &quot; + e.getLocalizedMessage());</span>
+<span class="fc" id="L77">            throw new ArithmeticException(&quot;Tried to divide by zero&quot;);</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.15.202606040825</span></div></body></html>
